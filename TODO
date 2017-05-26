@@ -1,0 +1,7 @@
+- Add code to repository.
+- Make makefile using Auto Build Tools.
+- Make screen-size panel that takes input.
+- Make sure that panel scrolls.
+- Create menu with option to quit application.
+- Add option to store file.
+
