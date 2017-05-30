@@ -1,3 +1,4 @@
 bin_PROGRAMS = te
-te_SOURCES = Main.cpp Terminal.h Terminal.cpp
+te_LDADD = -lncurses -lpanel
+te_SOURCES = Main.cpp
 

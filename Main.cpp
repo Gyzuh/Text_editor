@@ -1,27 +1,66 @@
-#include "Terminal.h"
+#include <string>
+#include <fstream>
 
-#include <iostream>
+#include <ncurses.h>
+#include <panel.h>
 
-void ShowMenu(void)
+bool Show_menu(void)
 {
-  std::cout << "e  Exit";
-}
+  WINDOW * Window = newwin(10, 10, 5, 5);
+  PANEL * Panel = new_panel(Window);
 
-int main(int iArgCount, char * iArgs[])
-{
-  terminal Terminal;
-  Terminal.Clear();
+  wprintw(Window, "MENU");
 
-  Terminal.SetCursor(1, 1);
-
-  ShowMenu();
+  update_panels();
+  doupdate();
 
   int Key;
-  bool Valid;
-  do
+  while (true)
   {
-    Valid = Terminal.GetKey(Key);
-  } while (!Valid || Key != 'e');
+    Key = getch();
+    if (Key == ';' || Key == 'q')
+      break;
+  };
+
+  del_panel(Panel);
+  delwin(Window);
+
+  return Key == 'q';
+}
+
+int main(int, char * *)
+{
+  initscr();
+
+  cbreak();
+  noecho();
+
+  refresh();
+
+  WINDOW * Window = stdscr;
+  PANEL * Panel = new_panel(Window);
+
+  std::string Buffer;
+
+  while (true)
+  {
+    int Key = getch();
+    if (Key == ';')
+    {
+      if (Show_menu())
+        break;
+    }
+
+    wechochar(Window, Key);
+    Buffer += Key;
+  };
+
+  del_panel(Panel);
+  endwin();
+
+  std::ofstream Stream("Output.txt");
+  Stream << Buffer;
 
   return 0;
 }
+
