@@ -1,3 +1,16 @@
-- Make sure that panel scrolls.
+- Insert instead of overwrite characters.
+- Deal with moving down or up from longer line to shorter one.
+- Make sure that newlines are stored correctly.
+- Deal with moving up with cursor at top edge of screen.
+- Deal with moving down with cursor at bottom edge of screen.
+- Deal with moving left with cursor at left edge of screen.
+- Deal with moving right with cursor at right edge of screen.
+- Make sure that backspace is handled correctly.
+- Make sure that delete is handled correctly.
+- Make sure that home is handled correctly.
+- Make sure that end is handled correctly.
+- Make sure that insert is handled correctly.
 - Add option to store file.
+- Consider adding testbenches.
+- Deal with resizing the terminal.
 
