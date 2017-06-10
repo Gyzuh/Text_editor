@@ -2,20 +2,23 @@
 #define TEXT_EDITOR_EDIT_WINDOW
 
 #include "Buffer.h"
+#include "Vector_2D.h"
 
 #include <ncurses.h>
 
 class edit_window
 {
   public:
-    edit_window() { Row = 0; Column = 0; }
+    edit_window() { Window_handle = NULL; }
 
     void Run(void);
 
   protected:
     WINDOW * Window_handle;
     buffer Buffer;
-    int Row, Column;
+    vector_2d Cursor_position;
+    vector_2d Window_position;
+    vector_2d Window_size;
 
     void Move_up(void);
     void Move_down(void);
@@ -25,7 +28,7 @@ class edit_window
     void Process_newline(void);
     void Process_character(int iKey);
 
-    void Rewrite_window(int iRow, int iColumn);
+    void Redraw_window(void);
 
     void Show_cursor_location(void);
 };

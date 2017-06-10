@@ -3,38 +3,38 @@
 #include <cstdlib>
 #include <cassert>
 
-void buffer::Insert(int iRow, int iColumn, int iLetter)
+void buffer::Insert(const vector_2d & iPosition, int iLetter)
 {
   if (iLetter != '\n')
   {
-    if (iRow < Data.size())
+    if (iPosition.Y < Lines.size())
     {
-      assert(iColumn <= Data[iRow].length());
-      Data[iRow].insert(iColumn, std::string(1, iLetter));
+      assert(iPosition.X <= Lines[iPosition.Y].length());
+      Lines[iPosition.Y].insert(iPosition.X, std::string(1, iLetter));
     }
     else
     {
-      assert(iColumn == 0);
-      Data.push_back(std::string(1, iLetter));
+      assert(iPosition.X == 0);
+      Lines.push_back(std::string(1, iLetter));
     }
   }
   else
   {
-    Data.push_back(Data[Data.size() - 1]);
-    for (int Row = Data.size() - 1; Row > iRow + 1; Row--)
-      Data[Row] = Data[Row - 1];
-    Data[iRow + 1] = Data[iRow].substr(iColumn);
-    Data[iRow] = Data[iRow].substr(0, iColumn);
+    Lines.push_back(Lines[Lines.size() - 1]);
+    for (int Row = Lines.size() - 2; Row > iPosition.Y + 1; Row--)
+      Lines[Row] = Lines[Row - 1];
+    Lines[iPosition.Y + 1] = Lines[iPosition.Y].substr(iPosition.X);
+    Lines[iPosition.Y] = Lines[iPosition.Y].substr(0, iPosition.X);
   }
 }
 
-std::string buffer::Get_contents(void)
+std::string buffer::Get_lines(void)
 {
-  std::string Text(Data[0]);
-  if (Data.size() > 0)
-    Text = Data[0];
-  for (int Row = 1; Row < Data.size(); Row++)
-    Text += '\n' + Data[Row];
+  std::string Text(Lines[0]);
+  if (Lines.size() > 0)
+    Text = Lines[0];
+  for (int Line = 1; Line < Lines.size(); Line++)
+    Text += '\n' + Lines[Line];
   return Text;
 }
 

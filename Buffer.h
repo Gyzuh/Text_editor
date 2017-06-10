@@ -1,23 +1,31 @@
 #ifndef TEXT_EDITOR_BUFFER
 #define TEXT_EDITOR_BUFFER
 
+#include "Vector_2D.h"
+
 #include <vector>
 #include <string>
 
 class buffer
 {
   public:
-    void Insert(int iRow, int iColumn, int iLetter);
+    void Insert(const vector_2d & iVector, int iLetter);
 
-    int Get_row_length(int iRow) { return iRow < Data.size() ? Data[iRow].length() : 0; }
-    int Get_rows(void) { return Data.size(); }
+    int Get_line_length(int iRow) { return iRow < Lines.size() ? Lines[iRow].length() : 0; }
+    int Get_line_count(void) { return Lines.size(); }
 
-    std::string Get_row(int iRow, int iStart, int iLength) { return iRow < Data.size() && iStart <= Data[iRow].length() ? Data[iRow].substr(iStart, iLength) : ""; }
+    std::string Get_line(const vector_2d & iPosition, int iLength)
+    {
+      if (iPosition.Y < Lines.size() && iPosition.X <= Lines[iPosition.Y].length())
+        return Lines[iPosition.Y].substr(iPosition.X, iLength);
+      else
+        return "";
+    }
 
-    std::string Get_contents(void);
+    std::string Get_lines(void);
 
   protected:
-    std::vector<std::string> Data;
+    std::vector<std::string> Lines;
 };
 
 #endif
