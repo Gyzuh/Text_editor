@@ -3,40 +3,38 @@
 #include <cstdlib>
 #include <cassert>
 
-void buffer::Insert(int iLetter)
+void buffer::Insert(int iRow, int iColumn, int iLetter)
 {
-  if (Row < Data.size())
-    Data[Row].insert(Column, std::string(1, iLetter));
-  else
-    Data.push_back(std::string(1, iLetter));
-
   if (iLetter != '\n')
-    Column++;
+  {
+    if (iRow < Data.size())
+    {
+      assert(iColumn <= Data[iRow].length());
+      Data[iRow].insert(iColumn, std::string(1, iLetter));
+    }
+    else
+    {
+      assert(iColumn == 0);
+      Data.push_back(std::string(1, iLetter));
+    }
+  }
   else
   {
-    Row++;
-    Column = 0;
+    Data.push_back(Data[Data.size() - 1]);
+    for (int Row = Data.size() - 1; Row > iRow + 1; Row--)
+      Data[Row] = Data[Row - 1];
+    Data[iRow + 1] = Data[iRow].substr(iColumn);
+    Data[iRow] = Data[iRow].substr(0, iColumn);
   }
-}
-
-void buffer::Move_position(int iRow_delta, int iColumn_delta)
-{
-  assert(abs(iRow_delta) <= 1 && abs(iColumn_delta) <= 1);
-
-  int New_row = Row + iRow_delta;
-  if (New_row >= 0 && New_row <= Data.size())
-    Row = New_row;
-
-  int New_column = Column + iColumn_delta;
-  if (New_column >= 0 && New_column <= Data[Row].length())
-    Column = New_column;
 }
 
 std::string buffer::Get_contents(void)
 {
-  std::string Text;
-  for (int Row = 0; Row < Data.size(); Row++)
-    Text += Data[Row];
+  std::string Text(Data[0]);
+  if (Data.size() > 0)
+    Text = Data[0];
+  for (int Row = 1; Row < Data.size(); Row++)
+    Text += '\n' + Data[Row];
   return Text;
 }
 

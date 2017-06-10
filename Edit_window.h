@@ -8,13 +8,26 @@
 class edit_window
 {
   public:
+    edit_window() { Row = 0; Column = 0; }
+
     void Run(void);
 
   protected:
     WINDOW * Window_handle;
     buffer Buffer;
+    int Row, Column;
 
-    void Move_cursor(int iRow_delta, int iColumn_delta);
+    void Move_up(void);
+    void Move_down(void);
+    void Move_left(void);
+    void Move_right(void);
+
+    void Process_newline(void);
+    void Process_character(int iKey);
+
+    void Rewrite_window(int iRow, int iColumn);
+
+    void Show_cursor_location(void);
 };
 
 #endif

@@ -7,16 +7,17 @@
 class buffer
 {
   public:
-    buffer(void) { Row = 0; Column = 0; };
+    void Insert(int iRow, int iColumn, int iLetter);
 
-    void Insert(int iLetter);
-    void Move_position(int iRow_delta, int iColumn_delta);
+    int Get_row_length(int iRow) { return iRow < Data.size() ? Data[iRow].length() : 0; }
+    int Get_rows(void) { return Data.size(); }
+
+    std::string Get_row(int iRow, int iStart, int iLength) { return iRow < Data.size() && iStart <= Data[iRow].length() ? Data[iRow].substr(iStart, iLength) : ""; }
 
     std::string Get_contents(void);
 
   protected:
     std::vector<std::string> Data;
-    int Row, Column;
 };
 
 #endif
