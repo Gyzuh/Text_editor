@@ -10,6 +10,8 @@ class buffer
 {
   public:
     void Insert(const vector_2d & iVector, int iLetter);
+    void Overwrite(const vector_2d & iVector, int iLetter);
+    void Remove(const vector_2d & iVector);
 
     int Get_line_length(int iRow) { return iRow < Lines.size() ? Lines[iRow].length() : 0; }
     int Get_line_count(void) { return Lines.size(); }

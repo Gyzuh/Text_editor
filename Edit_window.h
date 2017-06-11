@@ -9,16 +9,19 @@
 class edit_window
 {
   public:
-    edit_window() { Window_handle = NULL; }
+    edit_window() { Window_handle = NULL; Overwrite = false; }
 
     void Run(void);
 
   protected:
+    static const int Tab_size = 8;
+
     WINDOW * Window_handle;
     buffer Buffer;
     vector_2d Cursor_position;
     vector_2d Window_position;
     vector_2d Window_size;
+    bool Overwrite;
 
     void Move_up(void);
     void Move_down(void);
@@ -26,6 +29,12 @@ class edit_window
     void Move_right(void);
 
     void Process_newline(void);
+    void Process_backspace(void);
+    void Process_delete(void);
+    void Process_home(void);
+    void Process_end(void);
+    void Process_insert(void);
+    void Process_tab(void);
     void Process_character(int iKey);
 
     void Redraw_window(void);

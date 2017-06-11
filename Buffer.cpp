@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <cassert>
 
+#include <ncurses.h>
+
 void buffer::Insert(const vector_2d & iPosition, int iLetter)
 {
   if (iLetter != '\n')
@@ -20,11 +22,30 @@ void buffer::Insert(const vector_2d & iPosition, int iLetter)
   }
   else
   {
-    Lines.push_back(Lines[Lines.size() - 1]);
-    for (int Row = Lines.size() - 2; Row > iPosition.Y + 1; Row--)
-      Lines[Row] = Lines[Row - 1];
-    Lines[iPosition.Y + 1] = Lines[iPosition.Y].substr(iPosition.X);
-    Lines[iPosition.Y] = Lines[iPosition.Y].substr(0, iPosition.X);
+    Lines.insert(Lines.begin() + iPosition.Y + 1, Lines[iPosition.Y].substr(iPosition.X));
+    Lines[iPosition.Y].erase(iPosition.X);
+  }
+}
+
+void buffer::Overwrite(const vector_2d & iPosition, int iLetter)
+{
+  if (iPosition.X < Lines[iPosition.Y].length())
+    Lines[iPosition.Y][iPosition.X] = iLetter;
+  else
+    Lines[iPosition.Y] += iLetter;
+}
+
+void buffer::Remove(const vector_2d & iPosition)
+{
+  if (iPosition.Y >= Lines.size())
+    return;
+
+  if (iPosition.X < Lines[iPosition.Y].length())
+    Lines[iPosition.Y].erase(iPosition.X, 1);
+  else if (iPosition.Y < Lines.size() - 1)
+  {
+    Lines[iPosition.Y] += Lines[iPosition.Y + 1];
+    Lines.erase(Lines.begin() + iPosition.Y + 1);
   }
 }
 

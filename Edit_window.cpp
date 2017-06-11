@@ -57,6 +57,30 @@ void edit_window::Run(void)
         Process_newline();
         break;
 
+      case KEY_BACKSPACE:
+        Process_backspace();
+        break;
+
+      case KEY_DC:
+        Process_delete();
+        break;
+
+      case KEY_HOME:
+        Process_home();
+        break;
+
+      case KEY_END:
+        Process_end();
+        break;
+
+      case KEY_IC:
+        Process_insert();
+        break;
+
+      case '\t':
+        Process_tab();
+        break;
+
       default:
         Process_character(Key);
         break;
@@ -122,21 +146,83 @@ void edit_window::Move_right(void)
 
 void edit_window::Process_newline(void)
 {
+  assert(Window_handle != NULL);
   Buffer.Insert(Cursor_position, '\n');
   Cursor_position.X = 0;
   Cursor_position.Y++;
   Redraw_window();
 }
 
+void edit_window::Process_backspace(void)
+{
+  assert(Window_handle != NULL);
+  if (Cursor_position.X == 0 && Cursor_position.Y == 0)
+    return;
+  if (Cursor_position.X > 0)
+    Cursor_position.X--;
+  else if (Cursor_position.Y > 0)
+  {
+    Cursor_position.Y--;
+    Cursor_position.X = Buffer.Get_line_length(Cursor_position.Y);
+  }
+  Buffer.Remove(Cursor_position);
+  Redraw_window();
+}
+
+void edit_window::Process_delete(void)
+{
+  assert(Window_handle != NULL);
+  if (Cursor_position.Y == Buffer.Get_line_count() - 1 &&
+      Cursor_position.X == Buffer.Get_line_length(Cursor_position.Y))
+    return;
+  Buffer.Remove(Cursor_position);
+  Redraw_window();
+}
+
+void edit_window::Process_home(void)
+{
+  assert(Window_handle != NULL);
+  Cursor_position.X = 0;
+  Redraw_window();
+}
+
+void edit_window::Process_end(void)
+{
+  assert(Window_handle != NULL);
+  Cursor_position.X = Buffer.Get_line_length(Cursor_position.Y);
+  Redraw_window();
+}
+
+void edit_window::Process_insert(void)
+{
+  Overwrite = !Overwrite;
+}
+
+void edit_window::Process_tab(void)
+{
+  assert(Window_handle != NULL);
+  int Spaces = Tab_size - Cursor_position.X % Tab_size;
+  for (int Count = 0; Count < Spaces; Count++)
+    Buffer.Insert(Cursor_position, ' ');
+  Cursor_position.X += Spaces;
+  Redraw_window();
+}
+
 void edit_window::Process_character(int iKey)
 {
-  Buffer.Insert(Cursor_position, iKey);
+  assert(Window_handle != NULL);
+  if (!Overwrite)
+    Buffer.Insert(Cursor_position, iKey);
+  else
+    Buffer.Overwrite(Cursor_position, iKey);
   Cursor_position.X++;
   Redraw_window();
 }
 
 void edit_window::Redraw_window(void)
 {
+  assert(Window_handle != NULL);
+
   if (Cursor_position.X < Window_position.X)
     Window_position.X = Cursor_position.X;
   else if (Cursor_position.X >= Window_position.X + Window_size.X)
