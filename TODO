@@ -1,8 +1,3 @@
-- Make sure that backspace is handled correctly.
-- Make sure that delete is handled correctly.
-- Make sure that home is handled correctly.
-- Make sure that end is handled correctly.
-- Make sure that insert is handled correctly.
 - Add option to store file.
 - Consider adding testbenches.
 - Deal with resizing the terminal.

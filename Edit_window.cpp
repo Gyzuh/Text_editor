@@ -73,6 +73,14 @@ void edit_window::Run(void)
         Process_end();
         break;
 
+      case KEY_PPAGE:
+        Process_page_up();
+        break;
+
+      case KEY_NPAGE:
+        Process_page_down();
+        break;
+
       case KEY_IC:
         Process_insert();
         break;
@@ -99,28 +107,28 @@ void edit_window::Run(void)
 void edit_window::Move_up(void)
 {
   assert(Window_handle != NULL);
-  if (Cursor_position.Y > 0)
-  {
-    Cursor_position.Y--;
-    Cursor_position.X = std::min(Cursor_position.X, Buffer.Get_line_length(Cursor_position.Y));
-  }
+  if (Cursor_position.Y == 0)
+    return;
+  Cursor_position.Y--;
+  Cursor_position.X = std::min(Cursor_position.X, Buffer.Get_line_length(Cursor_position.Y));
   Redraw_window();
 }
 
 void edit_window::Move_down(void)
 {
   assert(Window_handle != NULL);
-  if (Cursor_position.Y < Buffer.Get_line_count() - 1)
-  {
-    Cursor_position.Y++;
-    Cursor_position.X = std::min(Cursor_position.X, Buffer.Get_line_length(Cursor_position.Y));
-  }
+  if (Cursor_position.Y == Buffer.Get_line_count() - 1)
+    return;
+  Cursor_position.Y++;
+  Cursor_position.X = std::min(Cursor_position.X, Buffer.Get_line_length(Cursor_position.Y));
   Redraw_window();
 }
 
 void edit_window::Move_left(void)
 {
   assert(Window_handle != NULL);
+  if (Cursor_position.X == 0 && Cursor_position.Y == 0)
+    return;
   if (Cursor_position.X > 0)
     Cursor_position.X--;
   else if (Cursor_position.Y > 0)
@@ -134,6 +142,9 @@ void edit_window::Move_left(void)
 void edit_window::Move_right(void)
 {
   assert(Window_handle != NULL);
+  if (Cursor_position.X == Buffer.Get_line_length(Cursor_position.Y) &&
+      Cursor_position.Y == Buffer.Get_line_count() - 1)
+    return;
   if (Cursor_position.X < Buffer.Get_line_length(Cursor_position.Y))
     Cursor_position.X++;
   else if (Cursor_position.Y < Buffer.Get_line_count() - 1)
@@ -190,6 +201,38 @@ void edit_window::Process_end(void)
 {
   assert(Window_handle != NULL);
   Cursor_position.X = Buffer.Get_line_length(Cursor_position.Y);
+  Redraw_window();
+}
+
+void edit_window::Process_page_up(void)
+{
+  assert(Window_handle != NULL);
+  if (Cursor_position.Y == 0)
+    return;
+  Cursor_position.Y -= Window_size.Y;
+  Window_position.Y -= Window_size.Y;
+  if (Cursor_position.Y < 0)
+    Cursor_position.Y = 0;
+  if (Window_position.Y < 0)
+    Window_position.Y = 0;
+  Cursor_position.X = std::min(Cursor_position.X, Buffer.Get_line_length(Cursor_position.Y));
+  Redraw_window();
+}
+
+void edit_window::Process_page_down(void)
+{
+  assert(Window_handle != NULL);
+  if (Cursor_position.Y == Buffer.Get_line_count() - 1)
+    return;
+  Cursor_position.Y += Window_size.Y;
+  Window_position.Y += Window_size.Y;
+  if (Cursor_position.Y >= Buffer.Get_line_count())
+    Cursor_position.Y = Buffer.Get_line_count() - 1;
+  if (Window_position.Y > Buffer.Get_line_count() - Window_size.Y)
+    Window_position.Y = Buffer.Get_line_count() - Window_size.Y;
+  if (Buffer.Get_line_count() < Window_size.Y)
+    Window_position.Y = 0;
+  Cursor_position.X = std::min(Cursor_position.X, Buffer.Get_line_length(Cursor_position.Y));
   Redraw_window();
 }
 

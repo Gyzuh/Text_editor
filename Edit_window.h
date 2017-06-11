@@ -33,6 +33,8 @@ class edit_window
     void Process_delete(void);
     void Process_home(void);
     void Process_end(void);
+    void Process_page_up(void);
+    void Process_page_down(void);
     void Process_insert(void);
     void Process_tab(void);
     void Process_character(int iKey);
