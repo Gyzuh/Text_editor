@@ -7,75 +7,40 @@
 
 #include <panel.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
 #include <sys/select.h>
-
-#define PIPE_READ  (0)
-#define PIPE_WRITE (1)
+#include <sys/ioctl.h>
 
 void shell_window::Show(void)
 {
-  // Bash seems to be taking over the foreground all the time.
-  // Solutions: - Run te as child. Drawback: PID changes all the time.
-  //            - Run bash non-interactive.  Not working at the moment for some reason.
-  //            - Run bash interactive in foreground.  Do not filter input, but use named pipes to communicate with te.
-
   WINDOW * Window_handle = newwin(Size.Y, Size.X, 0, 0);
   PANEL * Panel = new_panel(Window_handle);
 
-  int Input_pipe[2];
-  int Output_pipe[2];
-  assert(pipe(Input_pipe) >= 0);
-  assert(pipe(Output_pipe) >= 0);
+  scrollok(Window_handle, true);
 
-//  endwin();
+  int Terminal_master = posix_openpt(O_RDWR);
+  assert(Terminal_master >= 0);
 
-  pid_t PID = fork();
-  assert(PID >= 0);
-  if (PID == 0)
-//  if (PID > 0)
+  assert(grantpt(Terminal_master) == 0);
+  assert(unlockpt(Terminal_master) == 0);
+
+  int Terminal_slave = open(ptsname(Terminal_master), O_RDWR);
+
+  if (fork())
   {
-    assert(dup2(Input_pipe[PIPE_READ], STDIN_FILENO) != -1);
-    assert(dup2(Output_pipe[PIPE_WRITE], STDOUT_FILENO) != -1);
-    assert(dup2(Output_pipe[PIPE_WRITE], STDERR_FILENO) != -1);
+    close(Terminal_slave);
 
-    close(Input_pipe[PIPE_READ]);
-    close(Input_pipe[PIPE_WRITE]);
-    close(Output_pipe[PIPE_READ]);
-    close(Output_pipe[PIPE_WRITE]);
-
-    execl("/bin/bash", "/bin/bash", (char *) NULL);
-  }
-  else
-  {
-    // How do I put the parent in the foreground???
-//    wprintw(Window_handle, "%i, %i\n", PID, getpgrp());
-//  wprintw(Window_handle, "Parent: %i\n", getpgrp());
-//    if (setpgid(PID, getpgrp()) == -1)
-//      wprintw(Window_handle, "ERROR: %i", errno);
-//    Try tcsetpgrp!!!
-//    tcsetpgrp(getpgrp(), STDIN_FILENO);
-
-    close(Input_pipe[PIPE_READ]);
-    close(Output_pipe[PIPE_WRITE]);
-
-//    signal(SIGTTIN, SIG_IGN);
-
-    while (true)
+    while(true)
     {
       fd_set Read_handles;
       FD_ZERO(&Read_handles);
       FD_SET(STDIN_FILENO, &Read_handles);
-      FD_SET(Output_pipe[PIPE_READ], &Read_handles);
+      FD_SET(Terminal_master, &Read_handles);
 
-      struct timeval Timeout;
-      Timeout.tv_sec = 5;
-      Timeout.tv_usec = 0;
-
-      int Result = select(std::max(STDIN_FILENO, Output_pipe[PIPE_READ]) + 1,
-                          &Read_handles, NULL, NULL, &Timeout);
+      int Result = select(Terminal_master + 1,
+                          &Read_handles, NULL, NULL, NULL);
       assert(Result >= 0);
-      if (Result == 0)
-        continue;
 
       if (FD_ISSET(STDIN_FILENO, &Read_handles))
       {
@@ -83,26 +48,54 @@ void shell_window::Show(void)
         ssize_t Size = read(STDIN_FILENO, Buffer, 100);
         assert(Size >= 0);
         Buffer[Size] = 0;
-        Size = write(Input_pipe[PIPE_WRITE], Buffer, Size);
+        waddstr(Window_handle, Buffer);
+        update_panels();
+        doupdate();
+        Size = write(Terminal_master, Buffer, Size);
         assert(Size >= 0);
       }
 
-      if (FD_ISSET(Output_pipe[PIPE_READ], &Read_handles))
+      if (FD_ISSET(Terminal_master, &Read_handles))
       {
         char Buffer[101];
-        ssize_t Size = read(Output_pipe[PIPE_READ], Buffer, 100);
+        ssize_t Size = read(Terminal_master, Buffer, 100);
         assert(Size >= 0);
         Buffer[Size] = 0;
         waddstr(Window_handle, Buffer);
         update_panels();
         doupdate();
-//        printf("OUTPUT: %s\n", Buffer);
       }
     }
-
-    close(Input_pipe[PIPE_WRITE]);
-    close(Output_pipe[PIPE_READ]);
   }
+  else
+  {
+    close(Terminal_master);
+
+    struct termios Old_settings;
+    struct termios New_settings;
+    assert(tcgetattr(Terminal_slave, &Old_settings) == 0);
+    New_settings = Old_settings;
+    cfmakeraw(&New_settings);
+    assert(tcsetattr(Terminal_slave, TCSANOW, &New_settings) == 0);
+
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+
+    assert(dup(Terminal_slave) == STDIN_FILENO);
+    assert(dup(Terminal_slave) == STDOUT_FILENO);
+    assert(dup(Terminal_slave) == STDERR_FILENO);
+
+    close(Terminal_slave);
+
+    setsid();
+
+    ioctl(0, TIOCSCTTY, 1);
+
+    execl("/bin/bash", "/bin/bash", (char *) NULL);
+  }
+
+  scrollok(Window_handle, false);
 
   del_panel(Panel);
   delwin(Window_handle);
