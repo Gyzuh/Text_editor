@@ -22,8 +22,16 @@ void buffer::Insert(const vector_2d & iPosition, int iLetter)
   }
   else
   {
-    Lines.insert(Lines.begin() + iPosition.Y + 1, Lines[iPosition.Y].substr(iPosition.X));
-    Lines[iPosition.Y].erase(iPosition.X);
+    if (Lines.size() > 0)
+    {
+      Lines.insert(Lines.begin() + iPosition.Y + 1, Lines[iPosition.Y].substr(iPosition.X));
+      Lines[iPosition.Y].erase(iPosition.X);
+    }
+    else
+    {
+      Lines.push_back(std::string());
+      Lines.push_back(std::string());
+    }
   }
 }
 
@@ -51,7 +59,7 @@ void buffer::Remove(const vector_2d & iPosition)
 
 std::string buffer::Get_lines(void)
 {
-  std::string Text(Lines[0]);
+  std::string Text;
   if (Lines.size() > 0)
     Text = Lines[0];
   for (int Line = 1; Line < Lines.size(); Line++)

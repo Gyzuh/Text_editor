@@ -1,4 +1,9 @@
 - Add option to store file.
+  - Add shell to the menu.
+  - Show new window with terminal.
+  - Preprocess input to terminal.
+    - Open file if someone uses "open <File>"
+    - Save file if someone uses "save <File>"
 - Consider adding testbenches.
 - Deal with resizing the terminal.
 

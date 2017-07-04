@@ -30,7 +30,7 @@ void edit_window::Run(void)
 
     if (Key == ';')
     {
-      menu Menu;
+      menu Menu(Window_size);
       if (Menu.Show())
         break;
     }
@@ -94,7 +94,7 @@ void edit_window::Run(void)
         break;
     }
 
-    Show_cursor_location();
+//    Show_cursor_location();
   };
 
   del_panel(Panel);
